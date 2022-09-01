@@ -1,22 +1,27 @@
 use mysql::*;
 use mysql::prelude::*;
 
+#[derive(Debug)]
+struct TableRow {
+    field: String,
+    col_type: String,
+    null: String,
+    key: String,
+}
 
 fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     let url = "mysql://root@localhost:3306";
     let opts = OptsBuilder::new().user(Some("root")).db_name(Some("my_guitar_shop"));
     let mut conn = Conn::new(opts)?;
-    let mut orders = conn.query_iter("SELECT * from orders LIMIT 5").unwrap();
+    let cols:Vec<TableRow> = conn.query_map("SHOW COLUMNS from Orders", |row:Row| {
+        TableRow {
+            field: row[0].as_sql(false),
+            col_type: row[1].as_sql(false),
+            null: row[2].as_sql(false),
+            key: row[3].as_sql(false),
+        }
+    })?;
     
-    for ords in orders.iter() {
-        ords.for_each(|o| {
-            for x in o.unwrap().unwrap().iter() {
-                print!("{}", x.as_sql(false));
-            }
-            print!("\n");
-        } );
-
-    }
-    
+    println!("{}", cols[0].field.trim_matches('\'').to_string());
     Ok(())
 }
