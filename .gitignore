@@ -1,2 +1,4 @@
 /target
 *.sql
+debug/
+Cargo.lock
