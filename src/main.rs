@@ -22,12 +22,12 @@ struct Tables {
 
 fn create_diagram(tables: Vec<Tables>) -> String { 
     let mut diag = String::new();
-    tables.iter().for_each(|x| {
+    tables.iter().for_each(|table| {
         let mut table_children = String::new();
-        x.children.iter().for_each(|child| {
+        table.children.iter().for_each(|child| {
             table_children.push_str(&create_table_row(&child));
         });
-        let table_str = format!(r#"{}[shape=plain label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="10"><tr><td><b>{}</b></td></tr>{}</table>>]"#, x.parent, x.parent, table_children);
+        let table_str = format!(r#"{}[shape=plain label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="10"><tr><td><b>{}</b></td></tr>{}</table>>]"#, table.parent, table.parent, table_children);
         diag.push_str(&table_str);
         diag.push('\n');
     });
@@ -35,9 +35,7 @@ fn create_diagram(tables: Vec<Tables>) -> String {
 }
 
 fn create_table_row(table_row: &TableRow ) -> String {
-    
-    let row = format!("<tr><td>{}:{}</td></tr>", (*table_row).field.trim_matches('\''), (*table_row).col_type.trim_matches('\''));
-    row 
+    format!("<tr><td>{}:{}</td></tr>", (*table_row).field.trim_matches('\''), (*table_row).col_type.trim_matches('\''))
 }
 
 fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
@@ -64,27 +62,17 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
         }
     }).collect();
 
-    
-    /* let mut g = graph!(id!("id");
-        node!("nod"),
-        subgraph!("sb";
-            edge!(node_id!("a") => subgraph!(;
-               node!("n1";
-               NodeAttributes::color(color_name::black), NodeAttributes::shape(shape::box_))
-           )),
-            edge!(node_id!("b") => subgraph!(;
-               node!("n2";
-               NodeAttributes::color(color_name::black), NodeAttributes::shape(shape::box_))
-           ))
-       ),
-       edge!(node_id!("a1") => node_id!(esc "a2"))
-    );*/
+    tot.iter().for_each(|t_c| {
+        if t_c.parent.contains("order") {
+            println!("{:?}", t_c);
+        }
+    });
     
     let mut g = parse(create_diagram(tot).as_str())?;
 
     let graph_svg = exec(g, &mut PrinterContext::default(), vec![
         CommandArg::Format(Format::Svg),
-        CommandArg::Output("temp.svg".to_string()),
+        CommandArg::Output("example.svg".to_string()),
     ]).unwrap();
 
     Ok(())
