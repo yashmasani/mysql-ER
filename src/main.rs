@@ -21,23 +21,22 @@ struct Tables {
 }
 
 fn create_diagram(tables: Vec<Tables>) -> String { 
-    let diag = String::new();
-    /* tables.iter().for_each(|x| {
-         
-    })*/
-    let x = &tables[0];
-    format!(r#"strict graph t {{
-        aa[shape=square]
-        bb[shape=plain label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="10"><tr><td>{}</td></tr>{}</table>>]
-    }}"#, x.parent, create_table_row(&x.children[0]))
+    let mut diag = String::new();
+    tables.iter().for_each(|x| {
+        let mut table_children = String::new();
+        x.children.iter().for_each(|child| {
+            table_children.push_str(&create_table_row(&child));
+        });
+        let table_str = format!(r#"{}[shape=plain label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="10"><tr><td><b>{}</b></td></tr>{}</table>>]"#, x.parent, x.parent, table_children);
+        diag.push_str(&table_str);
+        diag.push('\n');
+    });
+    format!(r#"strict graph t {{ {} }}"#, diag)
 }
 
 fn create_table_row(table_row: &TableRow ) -> String {
     
-    let x = (*table_row).field.clone();
-    let y = (*table_row).col_type.clone();
-    
-    let row = format!("<tr><td>{} = {}</td></tr>", x.trim_matches('\''), y.trim_matches('\''));
+    let row = format!("<tr><td>{}:{}</td></tr>", (*table_row).field.trim_matches('\''), (*table_row).col_type.trim_matches('\''));
     row 
 }
 
