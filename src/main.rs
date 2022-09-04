@@ -25,10 +25,20 @@ fn create_diagram(tables: Vec<Tables>) -> String {
     /* tables.iter().for_each(|x| {
          
     })*/
-    r#"strict graph t {
+    let x = &tables[0];
+    format!(r#"strict graph t {{
         aa[shape=square]
-        bb[shape=plain label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="10"><tr><td>yash</td></tr></table>>]
-    }"#.to_string()
+        bb[shape=plain label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="10"><tr><td>{}</td></tr>{}</table>>]
+    }}"#, x.parent, create_table_row(&x.children[0]))
+}
+
+fn create_table_row(table_row: &TableRow ) -> String {
+    
+    let x = (*table_row).field.clone();
+    let y = (*table_row).col_type.clone();
+    
+    let row = format!("<tr><td>{} = {}</td></tr>", x.trim_matches('\''), y.trim_matches('\''));
+    row 
 }
 
 fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {

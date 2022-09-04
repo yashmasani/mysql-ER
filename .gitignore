@@ -2,3 +2,4 @@
 *.sql
 debug/
 Cargo.lock
+graphviz-rust
