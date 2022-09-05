@@ -1,3 +1,4 @@
+use std::env::*;
 use mysql::*;
 use mysql::prelude::*;
 // use dot_generator::*;
@@ -107,8 +108,32 @@ fn create_table_row(table_row: &TableRow, port_name: &String ) -> String {
 }
 
 fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
-    let url = "mysql://root@localhost:3306";
-    let opts = OptsBuilder::new().user(Some("root")).db_name(Some("my_guitar_shop"));
+    let args:Vec<String> = args().collect();
+    let mut port = 3306;
+    let mut user = "root";
+    let mut db = "";
+    let mut is_p = false;
+    let mut is_user = false;
+    let mut is_db = false;
+    for arg in &args {
+        if *arg == "-p".to_string() {
+            is_p = true;
+        } else if is_p {
+            port = arg.parse()?;
+            is_p = false;
+        } else if *arg == "-u".to_string() {
+            is_user = true;
+        } else if is_user {
+            user = arg;
+            is_user = false;
+        } else if *arg == "-db".to_string() {
+            is_db = true;
+        } else if is_db {
+            db = arg;
+            is_db = false;
+        }
+    }
+    let opts = OptsBuilder::new().user(Some(user)).db_name(Some(db)).tcp_port(port);
     let mut conn = Conn::new(opts)?;
     let tables:Vec<Row>= conn.query("SHOW TABLES")?;
     let tot:Vec<_> = tables.iter().map(|r| {
