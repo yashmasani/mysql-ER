@@ -32,8 +32,8 @@ fn create_diagram(tables: Vec<Tables>) -> String {
     let ports = create_ports(&tables);
     tables.iter().for_each(|table| {
         let mut table_children = String::new();
-        let mut port_name = String::new();
         table.children.iter().for_each(|child| {
+            let mut port_name = String::new();
             if child.key == "'MUL'" {
                 let x = ports.iter().find(|p| { p.1.field == child.field.trim_matches('\'') });
                 if x.is_some() {
@@ -53,7 +53,6 @@ fn create_diagram(tables: Vec<Tables>) -> String {
     });
     ports.iter().for_each(|p| {
         let port_str = format!("{}:{} -> {}:{}\n", p.0.parent, p.0.port_name, p.1.parent, p.1.port_name);
-        println!("{}", port_str);
         diag.push_str(&port_str);
     });
     format!(r#"strict graph t {{ 
@@ -64,21 +63,23 @@ fn create_diagram(tables: Vec<Tables>) -> String {
 fn create_ports (tables: &Vec<Tables>) -> Vec<(Port, Port)> {
     let mut ports:Vec<Port> = Vec::new();
     let mut port_pairs:Vec<(Port, Port)> = Vec::new();
+    let mut count = 0;
     tables.iter().for_each( |t| {
         t.children.iter().for_each(|c| {
+            count += 1;
             let par = t.parent.clone().trim_matches('\'').to_string();
             let fld = c.field.clone().trim_matches('\'').to_string();
             if c.key == "'MUL'" {
                 ports.push(Port {
                     parent: par,
                     field: fld,
-                    port_name: format!("{}_MUL", c.field.trim_matches('\''))
+                    port_name: format!("p{}_MUL", count)
                 });
             } else if c.key == "'PRI'" {
                 ports.push(Port {
                     parent: par,
                     field: fld,
-                    port_name: format!("{}_PRI", c.field.trim_matches('\''))
+                    port_name: format!("p{}_PRI", count)
                 });
             }
         })
@@ -92,7 +93,6 @@ fn create_ports (tables: &Vec<Tables>) -> Vec<(Port, Port)> {
             });
         }
     });
-    // println!("{:?}", port_pairs);
     port_pairs
 }
 
@@ -101,7 +101,7 @@ fn create_table_row(table_row: &TableRow, port_name: &String ) -> String {
     if prt.len() > 0 {
         prt = format!(r#" port="{}""#, prt);
     }
-    return format!("<tr><td{}>{}:{}</td></tr>", prt, (*table_row).field.trim_matches('\''), (*table_row).col_type.trim_matches('\''));
+    format!("<tr><td{}>{}:{}</td></tr>", prt, (*table_row).field.trim_matches('\''), (*table_row).col_type.trim_matches('\''))
 }
 
 fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
@@ -128,9 +128,9 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
         }
     }).collect();
 
-    let mut g = parse(create_diagram(tot).as_str())?;
+    let g = parse(create_diagram(tot).as_str())?;
     
-    let graph_svg = exec(g, &mut PrinterContext::default(), vec![
+    exec(g, &mut PrinterContext::default(), vec![
         CommandArg::Format(Format::Svg),
         CommandArg::Output("example.svg".to_string()),
     ]).unwrap();
