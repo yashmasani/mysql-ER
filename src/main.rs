@@ -35,12 +35,12 @@ fn create_diagram(tables: Vec<Tables>) -> String {
         table.children.iter().for_each(|child| {
             let mut port_name = String::new();
             if child.key == "'MUL'" {
-                let x = ports.iter().find(|p| { p.1.field == child.field.trim_matches('\'') });
+                let x = ports.iter().find(|p| { p.1.parent == table.parent && p.1.field == child.field.trim_matches('\'') });
                 if x.is_some() {
                     port_name = (&x.unwrap().1.port_name).to_string();
                 }
             } else if child.key == "'PRI'" {
-                let x = ports.iter().find(|p| { p.0.field == child.field.trim_matches('\'') });
+                let x = ports.iter().find(|p| { p.0.parent == table.parent && p.0.field == child.field.trim_matches('\'') });
                 if x.is_some() {
                     port_name = (&x.unwrap().0.port_name).to_string();
                 }
@@ -52,10 +52,11 @@ fn create_diagram(tables: Vec<Tables>) -> String {
         diag.push('\n');
     });
     ports.iter().for_each(|p| {
-        let port_str = format!("{}:{} -> {}:{}\n", p.0.parent, p.0.port_name, p.1.parent, p.1.port_name);
+        let port_str = format!("{}:{} -> {}:{}[dir=forward]\n", p.0.parent, p.0.port_name, p.1.parent, p.1.port_name);
         diag.push_str(&port_str);
     });
-    format!(r#"strict graph t {{ 
+    format!(r#"strict graph t {{
+            rankdir=LR
             {}
             }}"#, diag)
 }
@@ -101,7 +102,8 @@ fn create_table_row(table_row: &TableRow, port_name: &String ) -> String {
     if prt.len() > 0 {
         prt = format!(r#" port="{}""#, prt);
     }
-    format!("<tr><td{}>{}:{}</td></tr>", prt, (*table_row).field.trim_matches('\''), (*table_row).col_type.trim_matches('\''))
+    let x = format!("<tr><td{}>{}:{}</td></tr>", prt, (*table_row).field.trim_matches('\''), (*table_row).col_type.trim_matches('\''));
+    x
 }
 
 fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
