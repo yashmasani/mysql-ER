@@ -3,7 +3,7 @@
 ## CLI options
   <ol>
     <li>`-p` : port name -> defaults to 3306</li>
-    <li>`-db` : databasename -> <h3>required</h3> for database name</li>
+    <li>`-db` : databasename -> required for database name</li>
     <li>`-u`: user -> defaults to root</li>
   </ol>
 

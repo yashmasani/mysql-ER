@@ -1,7 +1,16 @@
 [package]
-name = "mySqlER"
+name = "my_sql_ER"
 version = "0.1.0"
 edition = "2021"
+
+[lib]
+name = "lib"
+path = "src/lib.rs"
+
+[[bin]]
+name = "main"
+path = "src/main.rs"
+
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
