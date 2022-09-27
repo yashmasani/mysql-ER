@@ -3,7 +3,7 @@ mod tests {
     use lib::*;
     use graphviz_rust::*;
     use graphviz_rust::dot_structures::*;
-    use graphviz_rust::dot_generator::{ attr, graph, id, node, stmt};
+    use graphviz_rust::dot_generator::{ attr, graph, id, node, stmt, edge, node_id, port};
 
     #[test]
     fn create_table_row_from_node_without_ports () {
@@ -124,11 +124,15 @@ mod tests {
         let tables = vec![table_one, table_two];
         let diag = create_diagram(tables);
     
-        println!("{:?}", graph!(
+        assert_eq!(graph!(
             strict id!("t");
             attr!("rankdir", "LR"),
-            node!("field_one_table"; attr!("shape", "plain"), attr!("label", html r#"<<table border="0" cellborder="1" cellspacing="0" cellpadding="10"><tr><td><b>field_one_table</b></td></tr><tr><td port="p1_PRI">my_id:int</td></tr><tr><td>order_id:int</td></tr><tr><td>item:int</td></tr><tr><td>customer_name:int</td></tr></table>>"#))
-))
+            node!("field_one_table"; attr!("shape", "plain"),
+                attr!("label", html r#"<<table border="0" cellborder="1" cellspacing="0" cellpadding="10"><tr><td><b>field_one_table</b></td></tr><tr><td port="p1_PRI">my_id:int</td></tr><tr><td>order_id:int</td></tr><tr><td>item:int</td></tr><tr><td>customer_name:int</td></tr></table>>"#)),
+            node!("field_two_table"; attr!("shape", "plain"), 
+                attr!("label", html r#"<<table border="0" cellborder="1" cellspacing="0" cellpadding="10"><tr><td><b>field_two_table</b></td></tr><tr><td port="p5_MUL">my_id:int</td></tr></table>>"#)),
+            edge!(node_id!("field_one_table", port!(id!("p1_PRI"))) => node_id!("field_two_table", port!(id!("p5_MUL"))); attr!("dir", "forward"))
+        ), parse(&diag).unwrap());
     }
 
 }
