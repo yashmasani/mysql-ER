@@ -16,5 +16,5 @@ path = "src/main.rs"
 
 [dependencies]
 mysql = "*"
-graphviz-rust = { path = 'graphviz-rust' }
+graphviz-rust = "*" 
 
