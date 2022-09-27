@@ -1,6 +1,10 @@
 #[cfg(test)]
 mod tests {
     use lib::*;
+    use graphviz_rust::*;
+    use graphviz_rust::dot_structures::*;
+    use graphviz_rust::dot_generator::{ attr, graph, id, node, stmt};
+
     #[test]
     fn create_table_row_from_node_without_ports () {
         // pass
@@ -89,6 +93,42 @@ mod tests {
     #[test]
     fn create_diagram_test () {
         //pass
+        let fields = vec!["my_id", "order_id", "item", "customer_name"];
+        let table_rows:Vec<TableRow> = fields.iter().map(|x| {
+            let mut key = "'PRI'".to_string();
+            if !x.ends_with("id") {
+                key = "'MUL'".to_string();
+            }
+            return TableRow {
+                field: x.to_string(),
+                col_type: "'int'".to_string(),
+                null: "''".to_string(),
+                key,
+            };
+        }).collect();
+        let table_one = Tables {
+            parent: "field_one_table".to_string(),
+            children: table_rows,
+        };
+        let table_two = Tables {
+            parent: "field_two_table".to_string(),
+            children: vec![
+                TableRow {
+                    field: "my_id".to_string(),
+                    col_type: "'int'".to_string(),
+                    null: "''".to_string(),
+                    key: "'MUL'".to_string(),
+                }
+            ],
+        };
+        let tables = vec![table_one, table_two];
+        let diag = create_diagram(tables);
+    
+        println!("{:?}", graph!(
+            strict id!("t");
+            attr!("rankdir", "LR"),
+            node!("field_one_table"; attr!("shape", "plain"), attr!("label", html r#"<<table border="0" cellborder="1" cellspacing="0" cellpadding="10"><tr><td><b>field_one_table</b></td></tr><tr><td port="p1_PRI">my_id:int</td></tr><tr><td>order_id:int</td></tr><tr><td>item:int</td></tr><tr><td>customer_name:int</td></tr></table>>"#))
+))
     }
 
 }
